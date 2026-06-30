@@ -14,21 +14,26 @@ from matplotlib.ticker import FuncFormatter
 
 def parse_args():
     p = argparse.ArgumentParser(
-        description="Compare bad vs good osmon storage datasets and write a PDF evidence pack."
+        description="Compare two osmon storage datasets and write a PDF evidence pack."
     )
 
-    p.add_argument("bad_file", help="Bad/problem osmon file")
-    p.add_argument("good_file", help="Good/clean osmon file")
+    p.add_argument("bad_file", help="Dataset A osmon file")
+    p.add_argument("good_file", help="Dataset B osmon file")
 
-    p.add_argument("--label-a", default="Bad period")
-    p.add_argument("--label-b", default="Good period")
+    p.add_argument("--label-a", default="Dataset A")
+    p.add_argument("--label-b", default="Dataset B")
 
     p.add_argument("--start", default="15:30", help="Start HH:MM")
     p.add_argument("--end", default="18:30", help="End HH:MM")
 
-    p.add_argument("--period", default="1min", help="Resample period. Default: 1min")
-    p.add_argument("--bucket-size", type=int, default=100, help="Read MB/s bucket size. Default: 100")
-    p.add_argument("--min-bucket-samples", type=int, default=10, help="Minimum samples per bucket. Default: 10")
+    p.add_argument("--period", default="1min",
+                   help="Resample period. Default: 1min")
+
+    p.add_argument("--bucket-size", type=int, default=100,
+                   help="Read MB/s bucket size. Default: 100")
+
+    p.add_argument("--min-bucket-samples", type=int, default=10,
+                   help="Minimum samples per bucket. Default: 10")
 
     p.add_argument("--out-prefix", default="osmon_evidence")
 
@@ -602,59 +607,59 @@ def add_dataframe_page(pdf, title, df, max_rows=40, fontsize=7.2):
     add_text_page(pdf, title, lines, fontsize=fontsize)
 
 
-def plot_evidence_to_pdf(pdf, bad, good, combined, out_prefix):
+def plot_evidence_to_pdf(pdf, bad, good, combined, out_prefix,args):
     fig, axes = plt.subplots(8, 1, figsize=(18, 24), sharex=True)
 
-    axes[0].plot(bad.index, bad["rmbs_tot"], label="Bad read MB/s", linewidth=1.4)
-    axes[0].plot(good.index, good["rmbs_tot"], label="Good read MB/s", linewidth=1.4)
+    axes[0].plot(bad.index, bad["rmbs_tot"], label=f"{args.label_a} read MB/s", linewidth=1.4)
+    axes[0].plot(good.index, good["rmbs_tot"], label=f"{args.label_b} read MB/s", linewidth=1.4)
     axes[0].set_title("Completed read throughput")
     axes[0].set_ylabel("MB/s")
     axes[0].legend()
     axes[0].grid(True, alpha=0.3)
 
-    axes[1].plot(combined.index, combined["rmbs_tot_bad_minus_good"], label="Bad - good read MB/s", linewidth=1.4)
+    axes[1].plot(combined.index, combined["rmbs_tot_bad_minus_good"], label=f"{args.label_a} - good read MB/s", linewidth=1.4)
     axes[1].axhline(0, color="black", linewidth=0.8)
     axes[1].set_title("Read throughput delta")
     axes[1].set_ylabel("MB/s")
     axes[1].legend()
     axes[1].grid(True, alpha=0.3)
 
-    axes[2].plot(bad.index, bad["await_hotavg"], label="Bad await_hotavg", linewidth=1.4)
-    axes[2].plot(good.index, good["await_hotavg"], label="Good await_hotavg", linewidth=1.4)
+    axes[2].plot(bad.index, bad["await_hotavg"], label="f{args.label_a} await_hotavg", linewidth=1.4)
+    axes[2].plot(good.index, good["await_hotavg"], label=f"{args.label_b} await_hotavg", linewidth=1.4)
     axes[2].set_title("Hot-device wait time")
     axes[2].set_ylabel("ms")
     axes[2].legend()
     axes[2].grid(True, alpha=0.3)
 
-    axes[3].plot(combined.index, combined["await_hotavg_bad_minus_good"], label="Bad - good await_hotavg", linewidth=1.4)
+    axes[3].plot(combined.index, combined["await_hotavg_bad_minus_good"], label=f"{args.label_a} - good await_hotavg", linewidth=1.4)
     axes[3].axhline(0, color="black", linewidth=0.8)
     axes[3].set_title("Hot-device wait time delta")
     axes[3].set_ylabel("ms")
     axes[3].legend()
     axes[3].grid(True, alpha=0.3)
 
-    axes[4].plot(bad.index, bad["svctm_hotavg"], label="Bad svctm_hotavg", linewidth=1.4)
-    axes[4].plot(good.index, good["svctm_hotavg"], label="Good svctm_hotavg", linewidth=1.4)
+    axes[4].plot(bad.index, bad["svctm_hotavg"], label=f"{args.label_a} svctm_hotavg", linewidth=1.4)
+    axes[4].plot(good.index, good["svctm_hotavg"], label=f"{args.label_b} svctm_hotavg", linewidth=1.4)
     axes[4].set_title("Hot-device service time")
     axes[4].set_ylabel("ms")
     axes[4].legend()
     axes[4].grid(True, alpha=0.3)
 
-    axes[5].plot(combined.index, combined["svctm_hotavg_bad_minus_good"], label="Bad - good svctm_hotavg", linewidth=1.4)
+    axes[5].plot(combined.index, combined["svctm_hotavg_bad_minus_good"], label="f{args.label_a} - good svctm_hotavg", linewidth=1.4)
     axes[5].axhline(0, color="black", linewidth=0.8)
     axes[5].set_title("Hot-device service time delta")
     axes[5].set_ylabel("ms")
     axes[5].legend()
     axes[5].grid(True, alpha=0.3)
 
-    axes[6].plot(bad.index, bad["pctutil_avg"], label="Bad pctutil_avg", linewidth=1.4)
-    axes[6].plot(good.index, good["pctutil_avg"], label="Good pctutil_avg", linewidth=1.4)
+    axes[6].plot(bad.index, bad["pctutil_avg"], label=f"{args.label_a} pctutil_avg", linewidth=1.4)
+    axes[6].plot(good.index, good["pctutil_avg"], label=f"{args.label_b} pctutil_avg", linewidth=1.4)
     axes[6].set_title("Average disk utilisation")
     axes[6].set_ylabel("% util")
     axes[6].legend()
     axes[6].grid(True, alpha=0.3)
 
-    axes[7].plot(combined.index, combined["pctutil_avg_bad_minus_good"], label="Bad - good pctutil_avg", linewidth=1.4)
+    axes[7].plot(combined.index, combined["pctutil_avg_bad_minus_good"], label=f"{args.label_a} - good pctutil_avg", linewidth=1.4)
     axes[7].axhline(0, color="black", linewidth=0.8)
     axes[7].set_title("Average disk utilisation delta")
     axes[7].set_ylabel("% util")
@@ -675,7 +680,7 @@ def plot_evidence_to_pdf(pdf, bad, good, combined, out_prefix):
     return png
 
 
-def plot_bucket_to_pdf(pdf, bucket_df, out_prefix):
+def plot_bucket_to_pdf(pdf, bucket_df, out_prefix,args):
     if bucket_df.empty:
         return None
 
@@ -685,22 +690,22 @@ def plot_bucket_to_pdf(pdf, bucket_df, out_prefix):
 
     axes[0].bar(labels, bucket_df["await_avg_bad_minus_good"])
     axes[0].axhline(0, color="black", linewidth=0.8)
-    axes[0].set_title("Bad - good await_avg by comparable read bucket")
+    axes[0].set_title(f"{args.label_a} - good await_avg by comparable read bucket")
     axes[0].set_ylabel("ms")
 
     axes[1].bar(labels, bucket_df["await_hotavg_bad_minus_good"])
     axes[1].axhline(0, color="black", linewidth=0.8)
-    axes[1].set_title("Bad - good await_hotavg by comparable read bucket")
+    axes[1].set_title(f"{args.label_a} - good await_hotavg by comparable read bucket")
     axes[1].set_ylabel("ms")
 
     axes[2].bar(labels, bucket_df["svctm_hotavg_bad_minus_good"])
     axes[2].axhline(0, color="black", linewidth=0.8)
-    axes[2].set_title("Bad - good svctm_hotavg by comparable read bucket")
+    axes[2].set_title(f"{args.label_a} - good svctm_hotavg by comparable read bucket")
     axes[2].set_ylabel("ms")
 
     axes[3].bar(labels, bucket_df["pctutil_avg_bad_minus_good"])
     axes[3].axhline(0, color="black", linewidth=0.8)
-    axes[3].set_title("Bad - good pctutil_avg by comparable read bucket")
+    axes[3].set_title(f"{args.label_a} - good pctutil_avg by comparable read bucket")
     axes[3].set_ylabel("% util")
     axes[3].set_xlabel("Read MB/s bucket")
 
@@ -729,14 +734,14 @@ def write_pdf_report(
     efficiency_df,
     bad,
     good,
-    combined,
+    combined
 ):
     with PdfPages(pdf_file) as pdf:
         intro = [
             "OSMON storage evidence report",
             "=" * 100,
-            f"Bad/problem file:       {args.bad_file}",
-            f"Good/clean file:        {args.good_file}",
+            f"{args.label_a}/problem file:       {args.bad_file}",
+            f"{args.label_b}/clean file:        {args.good_file}",
             f"Label A:                {args.label_a}",
             f"Label B:                {args.label_b}",
             f"Window:                 {args.start} to {args.end}",
@@ -813,13 +818,13 @@ def write_pdf_report(
             bad,
             good,
             combined,
-            args.out_prefix,
+            args.out_prefix, args
         )
 
         bucket_png = plot_bucket_to_pdf(
             pdf,
             bucket_df,
-            args.out_prefix,
+            args.out_prefix,args
         )
 
     return evidence_png, bucket_png
@@ -920,7 +925,7 @@ def main():
         efficiency_df,
         bad,
         good,
-        combined,
+        combined
     )
 
     print()
