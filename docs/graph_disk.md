@@ -18,7 +18,7 @@ Key behaviour:
   * PDF report includes intro page, aggregate page, per-metric top-N pages, and optional per-device pages.
 
 Typical:
-  python3 graph_disk_metric_top10_pdf.py -i disk_stats.csv -o ld6ux351 -p '^dm-' --title "LD6UX351 dm storage metrics" --warn-await 2 --include-queue
+  python3 graph_disk_metric_top10_pdf.py -i disk_stats.csv -o <SERVER> -p '^dm-' --title "Server dm storage metrics" --warn-await 2 --include-queue
 
 Requires:
   pandas matplotlib
