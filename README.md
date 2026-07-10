@@ -6,7 +6,7 @@ The generated documentation below is intended to make each script easier to run,
 
 ## What is in this repository?
 
-- **Python scripts detected:** 26
+- **Python scripts detected:** 27
 - **Per-script documentation:** `docs/`
 - **Dependencies file:** `requirements.txt`
 
@@ -23,6 +23,7 @@ pip install -r requirements.txt
 | Script | Purpose | CLI options | Dependencies | Documentation |
 |---|---|---:|---|---|
 | `io/comp_iov.py` | Compare diagnostic/input files and report differences. | 0 | stdlib only | [docs](docs/comp_iov.md) |
+| `io/graph_disk.py` | graph_disk_metric_top10_pdf.py | 20 | `matplotlib`, `pandas` | [docs](docs/graph_disk.md) |
 | `io/iof.py` | Compare Informix onstat -g iof AIO global files between good and bad RSS periods. | 4 | `matplotlib`, `pandas` | [docs](docs/iof.md) |
 | `io/ioh.py` | Utility script for ioh. | 0 | `numpy`, `pandas` | [docs](docs/ioh.md) |
 | `io/ioh_graph.py` | Utility script for ioh graph. | 0 | `matplotlib`, `pandas` | [docs](docs/ioh_graph.md) |

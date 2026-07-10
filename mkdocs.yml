@@ -5,6 +5,7 @@ nav:
   - Home: index.md
   - Scripts:
       - comp_iov.py: comp_iov.md
+      - graph_disk.py: graph_disk.md
       - iof.py: iof.md
       - ioh.py: ioh.md
       - ioh_graph.py: ioh_graph.md
