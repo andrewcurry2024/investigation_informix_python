@@ -1,0 +1,37 @@
+site_name: Investigation Informix Python
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Scripts:
+      - comp_iov.py: comp_iov.md
+      - iof.py: iof.md
+      - ioh.py: ioh.md
+      - ioh_graph.py: ioh_graph.md
+      - iostats.py: iostats.md
+      - iostats_v26.py: iostats_v26.md
+      - iostats_v26_mpath.py: iostats_v26_mpath.md
+      - summarise_disk.py: summarise_disk.md
+      - all_mutex.py: all_mutex.md
+      - smx_prof.py: smx_prof.md
+      - spi.py: spi.md
+      - spi_comp.py: spi_comp.md
+      - osmon_comp.py: osmon_comp.md
+      - osmon_comp_evidence.py: osmon_comp_evidence.md
+      - osmon_sum.py: osmon_sum.md
+      - comp_ppf.py: comp_ppf.md
+      - parse_profile.py: parse_profile.md
+      - ppf.py: ppf.md
+      - lgr_lpage.py: lgr_lpage.md
+      - lograte_enhanced.py: lograte_enhanced.md
+      - plot_all_rss.py: plot_all_rss.md
+      - rss_repl_plot_refactored.py: rss_repl_plot_refactored.md
+      - trans_profile.py: trans_profile.md
+      - unified.py: unified.md
+      - parse_his.py: parse_his.md
+      - decode_u.py: decode_u.md
+markdown_extensions:
+  - tables
+  - fenced_code
+  - toc:
+      permalink: true
