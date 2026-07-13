@@ -21,6 +21,7 @@ nav:
       - osmon_comp_evidence.py: osmon_comp_evidence.md
       - osmon_sum.py: osmon_sum.md
       - comp_ppf.py: comp_ppf.md
+      - parse_partition_sum.py: parse_partition_sum.md
       - parse_profile.py: parse_profile.md
       - ppf.py: ppf.md
       - lgr_lpage.py: lgr_lpage.md
