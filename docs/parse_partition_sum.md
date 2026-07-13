@@ -80,23 +80,25 @@ python partition-profile/parse_partition_sum.py \
 
 | Path/expression | Method | Type | Code location |
 |---|---|---|---|
-| `filename` | open | file/path expression | line 214 |
+| `filename` | open | file/path expression | line 215 |
 
 ## Detected outputs
 
 | Path/expression | Method | Type | Code location |
 |---|---|---|---|
-| `fig` | savefig | image/plot output | line 766 |
-| `all_csv` | to_csv | CSV file | line 772 |
-| `metric_file` | to_csv | CSV file | line 779 |
-| `output_file` | to_csv | CSV file | line 803 |
-| `pdf_path` | PdfPages | PDF report | line 1112 |
-| `png_file` | savefig | image/plot output | line 1147 |
+| `fig` | savefig | image/plot output | line 854 |
+| `all_csv` | to_csv | CSV file | line 860 |
+| `metric_file` | to_csv | CSV file | line 867 |
+| `output_file` | to_csv | CSV file | line 891 |
+| `pdf_path` | PdfPages | PDF report | line 1203 |
+| `png_file` | savefig | image/plot output | line 1243 |
 
 ## Dependencies
 
 - `matplotlib`
+- `numpy`
 - `pandas`
+- `seaborn`
 
 ## Functions
 
@@ -156,6 +158,14 @@ Returns dataframe with:
   lookup_nused
   lookup_npdata
   lookup_nrows
+
+### `create_metric_heatmap(df, metric, top_n=20, top_by=total, bucket=5min, figsize=(20, 10))`
+
+Create a time-vs-table heatmap.
+
+Rows    : Tables/partitions
+Columns : Time buckets
+Values  : Sum of metric values in each bucket
 
 ### `parse_partition_summary(filename, allowed_metrics=None)`
 
@@ -226,7 +236,7 @@ If both are supplied, rolling is applied first, then EWM.
 
 No function docstring detected.
 
-### `create_metric_figure(df, metric, top_n=15, top_by=max, smooth_window=0, smooth_ewm_span=0, fill_missing_zero=False, plot_raw=True, figsize=(16, 9))`
+### `create_metric_figure(df, metric, top_n=15, top_by=max, smooth_window=0, smooth_ewm_span=0, fill_missing_zero=False, plot_raw=True, figsize=(30, 10))`
 
 Create matplotlib figure for one metric.
 

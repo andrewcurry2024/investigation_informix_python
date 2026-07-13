@@ -53,6 +53,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.ticker import ScalarFormatter
+import seaborn as sns
 
 
 
@@ -310,6 +311,93 @@ def parse_partition_lookup(filename):
 
     return lookup
 
+
+def create_metric_heatmap(
+    df,
+    metric,
+    top_n=20,
+    top_by="total",
+    bucket="5min",
+    figsize=(20, 10),
+):
+    """
+    Create a time-vs-table heatmap.
+
+    Rows    : Tables/partitions
+    Columns : Time buckets
+    Values  : Sum of metric values in each bucket
+    """
+
+    import seaborn as sns
+    import numpy as np
+
+    metric_df = df[df["metric"] == metric].copy()
+
+    if metric_df.empty:
+        return None
+
+    # Pick busiest tables
+    selected = choose_top_entities(
+        metric_df,
+        top_n=top_n,
+        top_by=top_by,
+    )
+
+    metric_df = metric_df[
+        metric_df["display_name"].isin(selected)
+    ].copy()
+
+    # Bucket timestamps (15 minutes by default)
+    metric_df["bucket"] = (
+        metric_df["timestamp"]
+        .dt.floor(bucket)
+    )
+
+    # Create heatmap matrix
+    heat = metric_df.pivot_table(
+        index="display_name",
+        columns="bucket",
+        values="value",
+        aggfunc="sum",
+        fill_value=0,
+    )
+
+    heat.columns = heat.columns.strftime("%Y-%m-%d\n%H:%M")
+
+    if heat.empty:
+        return None
+
+    # Sort hottest tables to the top
+    heat = heat.loc[
+        heat.sum(axis=1)
+            .sort_values(ascending=False)
+            .index
+    ]
+
+    # Optional log scale so smaller hotspots remain visible
+    heat = np.log10(heat + 1)
+
+    fig, ax = plt.subplots(figsize=figsize)
+
+    sns.heatmap(
+        heat,
+        cmap="viridis",          # or "YlOrRd", "rocket", "magma"
+        linewidths=0.2,
+        linecolor="grey",
+        cbar_kws={"label": "log10(total + 1)"},
+        ax=ax,
+    )
+
+    ax.set_title(f"{nice_metric_title(metric)} ({metric})")
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Table")
+
+    plt.xticks(rotation=45, ha="right")
+    plt.yticks(rotation=0)
+
+    fig.tight_layout()
+
+    return fig
 
 def parse_partition_summary(filename, allowed_metrics=None):
     """
@@ -582,7 +670,7 @@ def create_metric_figure(
     smooth_ewm_span=0,
     fill_missing_zero=False,
     plot_raw=True,
-    figsize=(16, 9),
+    figsize=(30, 10),
 ):
     """
     Create matplotlib figure for one metric.
@@ -1026,7 +1114,10 @@ def main(argv=None):
         raise ValueError("--start cannot be later than --end")
 
     print("Reading summary file : %s" % args.summary)
-    summary = parse_partition_summary(args.summary, allowed_metrics=set(metrics))
+    summary = parse_partition_summary(
+        args.summary,
+        allowed_metrics=set(metrics),
+    )
 
     before_filter_rows = len(summary)
 
@@ -1055,10 +1146,10 @@ def main(argv=None):
         how="left",
         on="partnum_key",
     )
+
     joined = joined[
         joined["metric"].isin(metrics_to_keep)
     ].copy()
-
 
     joined["display_name"] = joined.apply(make_display_name, axis=1)
 
@@ -1100,8 +1191,8 @@ def main(argv=None):
     generated_plots = []
     generated_metrics = []
 
-    pdf_path = None
     pdf = None
+    pdf_path = None
 
     if not args.no_pdf:
         if os.path.isabs(args.pdf):
@@ -1112,7 +1203,9 @@ def main(argv=None):
         pdf = PdfPages(pdf_path)
 
     try:
-        metrics_in_data = sorted(joined["metric"].dropna().unique())
+        metrics_in_data = sorted(
+            joined["metric"].dropna().unique()
+        )
 
         if pdf is not None:
             add_pdf_cover_page(
@@ -1125,9 +1218,43 @@ def main(argv=None):
             )
 
         for metric in metrics_in_data:
+
+            generated_metrics.append(metric)
+
+            #
+            # Heatmap
+            #
+            fig = create_metric_heatmap(
+                joined,
+                metric,
+                top_n=args.top_n,
+                top_by="total",
+                bucket="15min",
+                figsize=(args.fig_width, args.fig_height),
+            )
+
+            if fig is not None:
+
+                if not args.no_png:
+                    png_file = os.path.join(
+                        args.output_dir,
+                        f"metric_{metric}_heatmap.png",
+                    )
+                    fig.savefig(png_file, dpi=140)
+                    generated_plots.append(png_file)
+                    print("Wrote PNG            : %s" % png_file)
+
+                if pdf is not None:
+                    pdf.savefig(fig)
+
+                plt.close(fig)
+
+            #
+            # Scatter / trend plot
+            #
             fig = create_metric_figure(
                 joined,
-                metric=metric,
+                metric,
                 top_n=args.top_n,
                 top_by=args.top_by,
                 smooth_window=args.smooth_window,
@@ -1137,21 +1264,21 @@ def main(argv=None):
                 figsize=(args.fig_width, args.fig_height),
             )
 
-            if fig is None:
-                continue
+            if fig is not None:
 
-            generated_metrics.append(metric)
+                if not args.no_png:
+                    png_file = os.path.join(
+                        args.output_dir,
+                        f"metric_{metric}_scatter.png",
+                    )
+                    fig.savefig(png_file, dpi=140)
+                    generated_plots.append(png_file)
+                    print("Wrote PNG            : %s" % png_file)
 
-            if not args.no_png:
-                png_file = os.path.join(args.output_dir, "metric_%s.png" % metric)
-                fig.savefig(png_file, dpi=140)
-                generated_plots.append(png_file)
-                print("Wrote PNG            : %s" % png_file)
+                if pdf is not None:
+                    pdf.savefig(fig)
 
-            if pdf is not None:
-                pdf.savefig(fig)
-
-            plt.close(fig)
+                plt.close(fig)
 
     finally:
         if pdf is not None:
@@ -1166,9 +1293,12 @@ def main(argv=None):
     print("Output directory     : %s" % args.output_dir)
     print("Metrics plotted      : %d" % len(generated_metrics))
     print("PNG plots generated  : %d" % len(generated_plots))
+
     if pdf_path:
         print("PDF report           : %s" % pdf_path)
+
     print("")
+
     joined["object_type"] = joined["tblname"].apply(object_type)
 
     summary = (
@@ -1184,14 +1314,15 @@ def main(argv=None):
             values="value",
             aggfunc="sum",
             fill_value=0,
-	    ).reset_index()
-   )
+        ).reset_index()
+    )
 
     print("")
     print("Object type summary by metric")
     print("=============================")
     print(pivot.to_string(index=False))
     print("")
+
 
 
 if __name__ == "__main__":

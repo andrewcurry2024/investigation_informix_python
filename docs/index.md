@@ -39,7 +39,7 @@ pip install -r requirements.txt
 | `osmon/osmon_comp_evidence.py` | Compare two osmon storage datasets and write a PDF evidence pack. | 10 | `matplotlib`, `numpy`, `pandas` | [docs](osmon_comp_evidence.md) |
 | `osmon/osmon_sum.py` | Summarise OSMON/storage performance data. | 0 | `matplotlib`, `pandas` | [docs](osmon_sum.md) |
 | `partition-profile/comp_ppf.py` | Compare two Informix partition_profile files. | 16 | `matplotlib`, `pandas` | [docs](comp_ppf.md) |
-| `partition-profile/parse_partition_sum.py` | parse_partition_sum.py | 20 | `matplotlib`, `pandas` | [docs](parse_partition_sum.md) |
+| `partition-profile/parse_partition_sum.py` | parse_partition_sum.py | 20 | `matplotlib`, `numpy`, `pandas`, `seaborn` | [docs](parse_partition_sum.md) |
 | `partition-profile/parse_profile.py` | Fast parser for Informix partition profile logs. | 13 | `matplotlib`, `pandas` | [docs](parse_profile.md) |
 | `partition-profile/ppf.py` | Compare diagnostic/input files and report differences. | 0 | stdlib only | [docs](ppf.md) |
 | `rss/lgr_lpage.py` | Utility script for lgr lpage. | 0 | stdlib only | [docs](lgr_lpage.md) |
