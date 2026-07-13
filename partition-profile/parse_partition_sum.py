@@ -54,6 +54,7 @@ import matplotlib.dates as mdates
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.ticker import ScalarFormatter
 import seaborn as sns
+import matplotlib.dates as mdates
 
 
 
@@ -311,7 +312,6 @@ def parse_partition_lookup(filename):
 
     return lookup
 
-
 def create_metric_heatmap(
     df,
     metric,
@@ -319,6 +319,8 @@ def create_metric_heatmap(
     top_by="total",
     bucket="5min",
     figsize=(20, 10),
+    highlight_ts=None,
+    highlight_end_ts=None
 ):
     """
     Create a time-vs-table heatmap.
@@ -347,7 +349,10 @@ def create_metric_heatmap(
         metric_df["display_name"].isin(selected)
     ].copy()
 
-    # Bucket timestamps (15 minutes by default)
+    if metric_df.empty:
+        return None
+
+    # Bucket timestamps
     metric_df["bucket"] = (
         metric_df["timestamp"]
         .dt.floor(bucket)
@@ -362,38 +367,100 @@ def create_metric_heatmap(
         fill_value=0,
     )
 
-    heat.columns = heat.columns.strftime("%Y-%m-%d\n%H:%M")
-
     if heat.empty:
         return None
 
     # Sort hottest tables to the top
     heat = heat.loc[
         heat.sum(axis=1)
-            .sort_values(ascending=False)
-            .index
+        .sort_values(ascending=False)
+        .index
     ]
 
-    # Optional log scale so smaller hotspots remain visible
+    # Keep datetime columns for highlighting
+    heat_columns_datetime = heat.columns
+
+    # Optional log scale
     heat = np.log10(heat + 1)
 
     fig, ax = plt.subplots(figsize=figsize)
 
     sns.heatmap(
         heat,
-        cmap="viridis",          # or "YlOrRd", "rocket", "magma"
+        cmap="viridis",
         linewidths=0.2,
         linecolor="grey",
-        cbar_kws={"label": "log10(total + 1)"},
+        cbar_kws={
+            "label": "log10(total + 1)"
+        },
         ax=ax,
     )
 
-    ax.set_title(f"{nice_metric_title(metric)} ({metric})")
+    #
+    # Highlight time
+    #
+    if highlight_ts is not None:
+
+        highlight_bucket = highlight_ts.floor(bucket)
+
+        if highlight_bucket in heat_columns_datetime:
+
+            col = list(heat_columns_datetime).index(
+                highlight_bucket
+            )
+
+            if highlight_end_ts is None:
+
+                ax.axvline(
+                    col,
+                    color="cyan",
+                    linewidth=3,
+                )
+
+                ax.axvline(
+                    col + 1,
+                    color="cyan",
+                    linewidth=3,
+                )
+
+            else:
+
+                end_bucket = highlight_end_ts.floor(bucket)
+
+                if end_bucket in heat_columns_datetime:
+                    end_col = list(heat_columns_datetime).index(
+                        end_bucket
+                    ) + 1
+                else:
+                    end_col = col + 1
+
+                ax.axvspan(
+                    col,
+                    end_col,
+                    color="cyan",
+                    alpha=0.25,
+                )
+    labels = [
+        ts.strftime("%Y-%m-%d\n%H:%M")
+        for ts in heat_columns_datetime
+    ]
+
+
+    ax.set_title(
+        f"{nice_metric_title(metric)} ({metric})"
+    )
+
     ax.set_xlabel("Time")
     ax.set_ylabel("Table")
+    ax.set_xticklabels(
+        labels,
+        rotation=45,
+        ha="right",
+    )
 
-    plt.xticks(rotation=45, ha="right")
-    plt.yticks(rotation=0)
+    plt.yticks(
+        rotation=0
+    )
 
     fig.tight_layout()
 
@@ -671,6 +738,8 @@ def create_metric_figure(
     fill_missing_zero=False,
     plot_raw=True,
     figsize=(30, 10),
+    highlight_ts=None,
+    highlight_end_ts=None,
 ):
     """
     Create matplotlib figure for one metric.
@@ -758,6 +827,34 @@ def create_metric_figure(
         fontsize="small",
         frameon=False,
     )
+    if highlight_ts is not None:
+
+        if highlight_end_ts is None:
+
+            ax.axvline(
+                highlight_ts,
+                color="red",
+                linestyle="--",
+                linewidth=2,
+                alpha=0.9,
+            )
+
+        else:
+
+            ax.axvspan(
+                highlight_ts,
+                highlight_end_ts,
+                color="red",
+                alpha=0.15,
+            )
+    plt.setp(
+        ax.get_xticklabels(),
+        rotation=45,
+        ha="right",
+    )
+
+    plt.yticks(rotation=0)
+
 
     fig.autofmt_xdate()
     fig.tight_layout(rect=[0, 0, 0.76, 1])
@@ -1083,6 +1180,17 @@ def parse_args(argv):
         default=10.0,
         help="Figure height for PNG/PDF chart pages. Default: 9",
     )
+    parser.add_argument(
+        "--highlight",
+        default=None,
+        help="Highlight a timestamp. Example: '2026-07-11 16:15'",
+    )
+
+    parser.add_argument(
+        "--highlight-end",
+        default=None,
+        help="Optional end of highlighted period.",
+    )
 
     return parser.parse_args(argv)
 
@@ -1109,6 +1217,11 @@ def main(argv=None):
 
     start_ts = parse_datetime_arg(args.start, "--start")
     end_ts = parse_datetime_arg(args.end, "--end")
+    highlight_ts = parse_datetime_arg(args.highlight, "--highlight")
+    highlight_end_ts = parse_datetime_arg(
+        args.highlight_end,
+        "--highlight-end",
+    )
 
     if start_ts is not None and end_ts is not None and start_ts > end_ts:
         raise ValueError("--start cannot be later than --end")
@@ -1231,6 +1344,8 @@ def main(argv=None):
                 top_by="total",
                 bucket="15min",
                 figsize=(args.fig_width, args.fig_height),
+                highlight_ts=highlight_ts,
+                highlight_end_ts=highlight_end_ts
             )
 
             if fig is not None:
@@ -1262,6 +1377,9 @@ def main(argv=None):
                 fill_missing_zero=args.fill_missing_zero,
                 plot_raw=not args.no_raw_underlay,
                 figsize=(args.fig_width, args.fig_height),
+                highlight_ts=highlight_ts,
+                highlight_end_ts=highlight_end_ts
+
             )
 
             if fig is not None:

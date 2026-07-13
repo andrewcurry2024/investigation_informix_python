@@ -75,23 +75,25 @@ python partition-profile/parse_partition_sum.py \
 | `--exclude-sysutils` | No | `` | `` | Exclude sysutils:* objects. (action: `store_true`) |
 | `--fig-width` | No | `24.0` | `` | Figure width for PNG/PDF chart pages. Default: 16 (type: `float`) |
 | `--fig-height` | No | `10.0` | `` | Figure height for PNG/PDF chart pages. Default: 9 (type: `float`) |
+| `--highlight` | No | `None` | `` | Highlight a timestamp. Example: '2026-07-11 16:15' |
+| `--highlight-end` | No | `None` | `` | Optional end of highlighted period. |
 
 ## Detected inputs
 
 | Path/expression | Method | Type | Code location |
 |---|---|---|---|
-| `filename` | open | file/path expression | line 215 |
+| `filename` | open | file/path expression | line 216 |
 
 ## Detected outputs
 
 | Path/expression | Method | Type | Code location |
 |---|---|---|---|
-| `fig` | savefig | image/plot output | line 854 |
-| `all_csv` | to_csv | CSV file | line 860 |
-| `metric_file` | to_csv | CSV file | line 867 |
-| `output_file` | to_csv | CSV file | line 891 |
-| `pdf_path` | PdfPages | PDF report | line 1203 |
-| `png_file` | savefig | image/plot output | line 1243 |
+| `fig` | savefig | image/plot output | line 951 |
+| `all_csv` | to_csv | CSV file | line 957 |
+| `metric_file` | to_csv | CSV file | line 964 |
+| `output_file` | to_csv | CSV file | line 988 |
+| `pdf_path` | PdfPages | PDF report | line 1316 |
+| `png_file` | savefig | image/plot output | line 1358 |
 
 ## Dependencies
 
@@ -159,7 +161,7 @@ Returns dataframe with:
   lookup_npdata
   lookup_nrows
 
-### `create_metric_heatmap(df, metric, top_n=20, top_by=total, bucket=5min, figsize=(20, 10))`
+### `create_metric_heatmap(df, metric, top_n=20, top_by=total, bucket=5min, figsize=(20, 10), highlight_ts=None, highlight_end_ts=None)`
 
 Create a time-vs-table heatmap.
 
@@ -236,7 +238,7 @@ If both are supplied, rolling is applied first, then EWM.
 
 No function docstring detected.
 
-### `create_metric_figure(df, metric, top_n=15, top_by=max, smooth_window=0, smooth_ewm_span=0, fill_missing_zero=False, plot_raw=True, figsize=(30, 10))`
+### `create_metric_figure(df, metric, top_n=15, top_by=max, smooth_window=0, smooth_ewm_span=0, fill_missing_zero=False, plot_raw=True, figsize=(30, 10), highlight_ts=None, highlight_end_ts=None)`
 
 Create matplotlib figure for one metric.
 
