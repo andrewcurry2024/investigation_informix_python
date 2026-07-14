@@ -6,7 +6,7 @@ The generated documentation below is intended to make each script easier to run,
 
 ## What is in this repository?
 
-- **Python scripts detected:** 28
+- **Python scripts detected:** 27
 - **Per-script documentation:** `docs/`
 - **Dependencies file:** `requirements.txt`
 
@@ -46,7 +46,6 @@ pip install -r requirements.txt
 | `rss/lograte_enhanced.py` | Utility script for lograte enhanced. | 0 | stdlib only | [docs](docs/lograte_enhanced.md) |
 | `rss/plot_all_rss.py` | Plot each RSS server separately as multiplots, with dual axis: | 13 | `matplotlib`, `numpy`, `pandas` | [docs](docs/plot_all_rss.md) |
 | `rss/rss_repl_plot_refactored.py` | RSS / OSMon analyser | 6 | `matplotlib`, `numpy`, `pandas` | [docs](docs/rss_repl_plot_refactored.md) |
-| `rss/trans_profile.py` | Utility script for trans profile. | 0 | stdlib only | [docs](docs/trans_profile.md) |
 | `rss/unified.py` | Utility script for unified. | 0 | stdlib only | [docs](docs/unified.md) |
 | `sql-history/parse_his.py` | Utility script for parse his. | 0 | stdlib only | [docs](docs/parse_his.md) |
 | `threads/decode_u.py` | Utility script for decode u. | 1 | stdlib only | [docs](docs/decode_u.md) |

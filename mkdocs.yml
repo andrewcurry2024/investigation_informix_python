@@ -28,7 +28,6 @@ nav:
       - lograte_enhanced.py: lograte_enhanced.md
       - plot_all_rss.py: plot_all_rss.md
       - rss_repl_plot_refactored.py: rss_repl_plot_refactored.md
-      - trans_profile.py: trans_profile.md
       - unified.py: unified.md
       - parse_his.py: parse_his.md
       - decode_u.py: decode_u.md
